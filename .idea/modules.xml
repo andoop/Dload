@@ -2,8 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/DLoad2.iml" filepath="$PROJECT_DIR$/DLoad2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/DLoad.iml" filepath="$PROJECT_DIR$/DLoad.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/dloadlib/dloadlib.iml" filepath="$PROJECT_DIR$/dloadlib/dloadlib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/dloadplugin/dloadplugin.iml" filepath="$PROJECT_DIR$/dloadplugin/dloadplugin.iml" />
     </modules>
   </component>
 </project>
