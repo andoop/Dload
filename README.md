@@ -15,10 +15,10 @@
 ---
 #####demo比较简单，但是能演示和介绍整个流程以及思想就行啦，干脆利索，效果图如下：
 
-<img src="http://i.imgur.com/00hc5YT.png" width = "300" height = "500" alt="图片名称" align=center />
-<img src="http://i.imgur.com/WxTxIM5.png" width = "300" height = "500" alt="图片名称" align=center />
+<img src="http://i.imgur.com/00hc5YT.png" width = "220" height = "350" alt="图片名称" align=center />
+<img src="http://i.imgur.com/WxTxIM5.png" width = "220" height = "350" alt="图片名称" align=center />
 
-<img src="http://i.imgur.com/U4WRLPO.png" width = "300" height = "500" alt="图片名称" align=center />
+<img src="http://i.imgur.com/U4WRLPO.png" width = "220" height = "350" alt="图片名称" align=center />
 
 #####打开插件就会进入插件中的页面（ListFragment），点击任何一个条目，进入插件中另一个页面（DetailFragment）
 
