@@ -1,5 +1,6 @@
 package cn.andoop.android.dloadplugin.ui;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -9,11 +10,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 
 import cn.andoop.android.dloadlib.model.ListItem;
+import cn.andoop.android.dloadlib.utils.ResourceUtils;
 
 public class DetailFragment extends Fragment {
 
@@ -29,6 +32,7 @@ public class DetailFragment extends Fragment {
 		LinearLayout linearLayout = new LinearLayout(getActivity());
 		linearLayout.setOrientation(LinearLayout.VERTICAL);
 		TextView title = new TextView(getActivity());
+		ImageView imageView=new ImageView(getActivity());
 		WebView webView = new WebView(getActivity());
 		
 		title.setPadding(20, 20, 20, 20);
@@ -46,8 +50,13 @@ public class DetailFragment extends Fragment {
 		webView.getSettings().setJavaScriptEnabled(true);
 		
 		linearLayout.addView(title);
+		linearLayout.addView(imageView);
 		linearLayout.addView(webView);
-		
+
+		//获取资源
+		Bitmap imageResouce = new ResourceUtils(getActivity()).getImageResouce("assets/car.jpg");
+		imageView.setImageBitmap(imageResouce);
+
 		Bundle bundle = getArguments();
 		if(bundle!=null&&( bundle.getSerializable("item")!=null)){
 			if(bundle.getSerializable("item") instanceof ListItem) {

@@ -22,6 +22,13 @@ public class DloadUtils {
 		void onSuccess();
 	}
 
+	/**
+	 * 从asset目录下将指定的文件写到指定位置
+	 * @param context
+	 * @param srcfile
+	 * @param destfile
+	 * @param dloadListener
+     */
 	public static void downloadPlugin(Context context,String srcfile,String destfile,
 			Downloadlistener dloadListener) {
 		

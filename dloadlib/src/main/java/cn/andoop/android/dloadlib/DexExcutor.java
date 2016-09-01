@@ -21,7 +21,6 @@ public class DexExcutor {
 	public static DexExcutor INSTANCE;
 	private Context context;
 	private DloadListener dloadListener;
-	private String filename="plugin.jar";
 	private String filepath;
 	private DexClassLoader dexClassLoader;
 	private DexExcutor(Context context){
@@ -47,7 +46,7 @@ public class DexExcutor {
 			dloadListener.onStart();
 		
 		//检查插件是否存在
-		File file = new File(filepath+File.separator+filename);
+		File file = new File(filepath+File.separator+MConstans.jarname);
 		if(file.exists()){
 			//存在，加载插件
 			loadPlugin();
@@ -59,7 +58,7 @@ public class DexExcutor {
 	
 	private void downloadPlugin() {
 		// TODO Auto-generated method stub
-		DloadUtils.downloadPlugin(context,"plugin.jar",filepath+File.separator+filename,new DloadUtils.Downloadlistener() {
+		DloadUtils.downloadPlugin(context,"plugin.jar",filepath+File.separator+MConstans.jarname,new DloadUtils.Downloadlistener() {
 			
 			@Override
 			public void onSuccess() {
@@ -97,7 +96,7 @@ public class DexExcutor {
 	private void loadPlugin() {
 		
 		try {
-			dexClassLoader = new DexClassLoader(filepath+File.separator+filename, filepath,null, context.getClassLoader());
+			dexClassLoader = new DexClassLoader(filepath+File.separator+MConstans.jarname, filepath,null, context.getClassLoader());
 			if(dloadListener!=null){
 				dloadListener.onProgress(100);
 				dloadListener.onSuccess();

@@ -3,7 +3,9 @@ apply plugin: 'com.android.library'
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.2"
-
+    lintOptions{
+        abortOnError false
+    }
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion 23
@@ -25,6 +27,11 @@ dependencies {
     compile project(':dloadlib')
 }
 
-task buildLib (type: Jar,dependsOn:'bundleRelease') {
-    from (project.buildDir.toString()+'/intermediates/classes/release')
+task buildLib (type: Jar,dependsOn:'build') {
+    from ('build/intermediates/classes/release')
+    //包含资源目录
+    from ('src/main/assets/')
+    //from fileTree(dir: 'src/main',includes: ['assets/**'])
+
 }
+
