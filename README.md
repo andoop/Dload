@@ -275,3 +275,218 @@ Dload类中逻辑
 	}
 
 有没有很简单！（因为是demo，所以逻辑越简单越好，没有做很多容错处理）
+
+---
+####看一下动态工程中怎样实现的吧
+
+	public class DloadImp implements Idload {
+	
+		@Override
+		public void showList(Context context) {
+			// TODO Auto-generated method stub
+			DLoadActivity.start(context, "cn.andoop.android.dloadplugin.ui.ListFragment", null);
+		}
+	
+		
+	}
+
+DloadImp 是动态工程中的类，这个类就是对dloadlib中Idload的实现
+DloadActivity是dloadlib中的acitvity，这个activity就是预先在宿主中注册过了activity，用它来承载动态工程中所有的页面（Fragment），这样看来，是不是动态工程中展现页面只能是Fragment?,其实不然，动态工程中其实可以有fragment，activity，service，等组件，只不过因为是动态加载进来的，说白了，最后这些类的实例最后都是反射得到的，他们的生命周期，系统可不管，所以直接使用动态工程中的fragment、activity、service等有生命周期的组件肯定是不行的，但是方法总是有地，那就是“占坑”，那就是预先在宿主中注册一些组件，如activity、service，然后让这些组件来代理动态工程中组件的生命周期，这样问题就解决了，但是也有其他问题呀，那就是动态工程中的资源怎样使用呢，能不能通过R去访问呢，这些问题留在后面解答，在我的dltest工程里寻找答案吧
+
+---
+####看一下DLoadActivity吧，看看怎样代理fragment生命周期
+	public class DLoadActivity extends FragmentActivity {
+	
+		private final static String CLASS_NAME = "classname";
+		private String mClassName;
+		private Bundle mBundle;
+	
+		@Override
+		protected void onCreate(Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+	
+			if (null != getIntent()) {
+				mClassName = getIntent().getStringExtra(CLASS_NAME);
+				mBundle = getIntent().getExtras();
+			}
+	
+			setContentView(getContentView());
+	
+		}
+	
+		private View getContentView() {
+			// TODO Auto-generated method stub
+	
+			LinearLayout ll_content = new LinearLayout(this);
+			ll_content.setOrientation(LinearLayout.VERTICAL);
+			ll_content.setId(10000012);
+			FragmentTransaction ft = this.getSupportFragmentManager()
+					.beginTransaction();
+			// 通过类名，反射获取到对应的类。既Fragment
+			Fragment fragment = (Fragment) DexExcutor.getInstance(this)
+					.newInstance(mClassName);
+			if (null != fragment) {
+				if (null != mBundle) {
+					fragment.setArguments(mBundle);
+				}
+				ft.add(ll_content.getId(), fragment, mClassName);
+				ft.commit();
+			}
+	
+			return ll_content;
+		}
+		//调用DLoadActivity加载fragment
+		public static void start(Context context, String className, Bundle bundle) {
+			Intent intent = new Intent(context, DLoadActivity.class);
+			if (null != bundle) {
+				intent.putExtras(bundle);
+			}
+			intent.putExtra(CLASS_NAME, className);
+			context.startActivity(intent);
+		}
+	
+	}
+
+---
+####动态工程中fragment又是怎样写的呢？
+
+public class ListFragment extends Fragment implements OnItemClickListener {
+
+	private RelativeLayout rl_content;
+	private MBaseAdapter mBaseAdapter;
+	private List<ListItem> data;
+
+	@Override
+	@Nullable
+	public View onCreateView(LayoutInflater inflater,
+			@Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		initData();
+		return getContentView();
+	}
+	
+
+	private View getContentView() {
+		rl_content = new RelativeLayout(getActivity());
+		ListView listView = new ListView(getActivity());
+		rl_content.addView(listView);
+		listView.setAdapter(mBaseAdapter);
+		listView.setOnItemClickListener(this);
+		return rl_content;
+	}
+  	 ...后面代码就不粘贴啦
+
+在这个demo中，可不能给fragment写布局文件了，必须进行代码布局了，其实也没啥嘛，布局文件能干的，我都能在代码中实现，不就是多写几行代码而已，但是图片资源怎样使用呢？
+看看下面吧
+
+---
+####在动态工程中使用图片资源
+
+这是动态工程中另一个fragment，在它中，使用了图片资源
+	public class DetailFragment extends Fragment {
+	
+		@Override
+		@Nullable
+		public View onCreateView(LayoutInflater inflater,
+				@Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+			// TODO Auto-generated method stub
+			return getContentView();
+		}
+	
+		//照样通过代码布局
+		private View getContentView() {
+			LinearLayout linearLayout = new LinearLayout(getActivity());
+			linearLayout.setOrientation(LinearLayout.VERTICAL);
+			TextView title = new TextView(getActivity());
+			ImageView imageView=new ImageView(getActivity());
+			WebView webView = new WebView(getActivity());
+			
+			title.setPadding(20, 20, 20, 20);
+			title.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+			title.setGravity(Gravity.CENTER);
+			
+			webView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+			webView.setWebViewClient(new WebViewClient(){
+				@Override
+				public boolean shouldOverrideUrlLoading(WebView view, String url) {
+					// TODO Auto-generated method stub
+					return false;
+				}
+			});
+			webView.getSettings().setJavaScriptEnabled(true);
+			
+			linearLayout.addView(title);
+			linearLayout.addView(imageView);
+			linearLayout.addView(webView);
+	
+			//获取资源，就这样，将图片名称传入这个工具类，就可以获取bp对象
+			Bitmap imageResouce = new ResourceUtils(getActivity()).getImageResouce("assets/car.jpg");
+			imageView.setImageBitmap(imageResouce);
+	
+			Bundle bundle = getArguments();
+			if(bundle!=null&&( bundle.getSerializable("item")!=null)){
+				if(bundle.getSerializable("item") instanceof ListItem) {
+					ListItem listitem = (ListItem) bundle.getSerializable("item");
+					title.setText(listitem.text);
+					webView.loadUrl(listitem.url);
+				}
+			}
+			
+			return linearLayout;
+		}
+	}
+
+ResourceUtils是一个工具类，就是读取文件中图片而已，有兴趣可以看看，也可以完善一下
+代码分析到此结束，如有不懂，还是看看code吧，show you code！，但是本篇教程距离结束还早呢，还是往下看吧
+
+---
+####怎样将动态工程打包呢？
+
+	task buildLib (type: Jar,dependsOn:'build') {
+	    from ('build/intermediates/classes/release')
+	    //包含资源目录
+	    from ('src/main/assets/')
+	    //from fileTree(dir: 'src/main',includes: ['assets/**'])
+	
+	}
+自定义task，打包的时候也需要用到的图片放到jar中，需要将图片放入到assets文件夹下的assets下
+执行buildLib即可生成动态工程对应的jar，所在目录为build/lib
+
+---
+####对生成的jar再次处理
+
+android dalvik 不能直接加载变异.class文件，需要再次处理一下，编译成dex文件，通过dx命令即可，
+
+格式如下
+
+	dx --dex --output=out.jar in.jar
+
+次工程对应的批处理文件（在builddex中）如下：
+
+	cd E:\android_dev\sdk\sdk\build-tools\23.0.2\
+	e:
+	dx --dex --output=F:\projects\mprojects\DLoad\builddex\dex\plugin.jar F:\projects\mprojects\DLoad\builddex\dloadplugin.jar
+
+需要处理的jar为dloadplugin.jar，生成的jar为plugin.jar，执行dx命令需要到对应文件夹下执行才行，如我的：E:\android_dev\sdk\sdk\build-tools\23.0.2\，不多解释了，很简单
+
+最后，将生成的plugin.jar放入宿主工程的assets目录即可（本工程是这样做的，真正开发中，jar往往会放在服务端，宿主去检查时候需要更新插件），本工程只为演示而生，更多变化，以及完善，这都需要你结合实际开发而去应对。
+
+---
+####总结一下吧
+
+动态加载用法流程如下：
+
+1. 定义宿主和动态工程交互接口如：ILoad，并预先注册需要的组件
+2. 宿主或着动态工程中实现接口
+3. 生成动态jar
+4. 通过dexclassloader加载动态jar包，动态jar包可以来源于服务端或者其他地方
+5. 宿主调用动态工程中ILoad的实现，动态工程也可以调用宿主方法，宿主实现一下ILoad既可（工程中没有体现，原理比较简单，通过dloadlib，直接调用就行）
+
+---
+####最后说一下注意点
+
+工程中值演示了加载一个动态jar，当然也可以加载多个，但是每一个动态jar对应一个dexclassloader对象
+对jar的升级维护校验，工程没有体现，真正开发，这些都要考虑。
+
+>暂时就这些吧，后期如有需求和疑问，还会再补充完善的
+>####周一、二会不断更新内容，欢迎持续关注andoop，每周干货永不停！
